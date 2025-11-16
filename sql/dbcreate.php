@@ -1,7 +1,7 @@
 <?php
 
 function connectDB() {
-  $mysqli = mysqli_connect("localhost", "test01", "test01", "test01");
+  $mysqli = mysqli_connect("localhost", "team01", "team01", "team01");
   if (mysqli_connect_errno()) {
     die("ERROR: Could not connect DB. " . mysqli_connect_error());
   }
@@ -13,7 +13,7 @@ function createTABLE() {
     $mysqli = connectDB();
     
     $tables = [
-        "CREATE TABLE User (
+        "CREATE TABLE IF NOT EXISTS User (
         user_id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(80) NOT NULL,
         email VARCHAR(120) NOT NULL UNIQUE,
@@ -21,14 +21,14 @@ function createTABLE() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );",
 
-        "CREATE TABLE Region (
+        "CREATE TABLE IF NOT EXISTS Region (
         region_id INT AUTO_INCREMENT PRIMARY KEY,
         country VARCHAR(80) NOT NULL,
         city VARCHAR(80) NOT NULL,
         UNIQUE KEY uk_region (country, city)
         );",
 
-        "CREATE TABLE Restaurant (
+        "CREATE TABLE IF NOT EXISTS Restaurant (
         rest_id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(120) NOT NULL,
         region_id INT NOT NULL,
@@ -38,12 +38,12 @@ function createTABLE() {
         KEY ix_rest_rating (rating)
         );",
 
-        "CREATE TABLE Category (
+        "CREATE TABLE IF NOT EXISTS Category (
         category_id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(80) NOT NULL UNIQUE
         );",
 
-        "CREATE TABLE Menu (
+        "CREATE TABLE IF NOT EXISTS Menu (
         menu_id INT AUTO_INCREMENT PRIMARY KEY,
         rest_id INT NOT NULL,
         category_id INT NOT NULL,
@@ -59,7 +59,7 @@ function createTABLE() {
         KEY ix_menu_price (price)
         );",
 
-        "CREATE TABLE OrderHistory (
+        "CREATE TABLE IF NOT EXISTS OrderHistory (
         order_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         menu_id INT NOT NULL,
@@ -73,7 +73,7 @@ function createTABLE() {
         KEY ix_order_menu (menu_id)
         );",
 
-        "CREATE TABLE Review (
+        "CREATE TABLE IF NOT EXISTS Review (
         review_id BIGINT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         rest_id INT NOT NULL,
@@ -86,7 +86,7 @@ function createTABLE() {
         KEY ix_review_user (user_id)
         );",
 
-        "CREATE TABLE Trend (
+        "CREATE TABLE IF NOT EXISTS Trend (
         trend_id INT AUTO_INCREMENT PRIMARY KEY,
         category_id INT NOT NULL,
         year YEAR NOT NULL,
@@ -94,6 +94,20 @@ function createTABLE() {
         popularity_index INT NOT NULL,
         FOREIGN KEY (category_id) REFERENCES Category(category_id),
         UNIQUE KEY uk_trend (category_id, year, season)
+        );",
+
+        "CREATE TABLE IF NOT EXISTS Favorite (
+        fav_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        rest_id INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (user_id) REFERENCES User(user_id),
+        FOREIGN KEY (rest_id) REFERENCES Restaurant(rest_id),
+
+        UNIQUE KEY uk_favorite (user_id, rest_id),
+        KEY ix_fav_user (user_id),
+        KEY ix_fav_rest (rest_id)
         );"
     ];
 
