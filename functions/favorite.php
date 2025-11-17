@@ -96,7 +96,7 @@ function toggleFavorite($user_id, $rest_id) {
     
     if ($isFavorited) {
         // 즐겨찾기 삭제
-        $success = removeFavorite($user_id, $rest_id);
+        $success = removeFavorite($user_id, rest_id: $rest_id);
         return [
             'success' => $success,
             'action' => 'removed',
@@ -187,8 +187,7 @@ function getUserFavoriteRestaurants($user_id) {
 
 
 /**
- * 즐겨찾기 토글 요청 처리 (GET 방식)
- * 페이지 로드 시 자동으로 실행됨
+ * 즐겨찾기 토글 요청 처리 
  */
 function handleFavoriteToggle() {
     if (isset($_GET['favorite_action']) && $_GET['favorite_action'] === 'toggle') {
@@ -198,7 +197,6 @@ function handleFavoriteToggle() {
         if ($user_id && $rest_id) {
             toggleFavorite($user_id, $rest_id);
             
-            // URL에서 favorite_action 파라미터 제거 후 리다이렉트
             $params = $_GET;
             unset($params['favorite_action']);
             
@@ -240,6 +238,7 @@ function renderFavoriteButton($user_id, $rest_id, $size = 'medium') {
     // 현재 URL 파라미터 유지하면서 favorite_action 추가
     $params = $_GET;
     $params['favorite_action'] = 'toggle';
+    $params['rest_id'] = $rest_id;
     $toggleUrl = '?' . http_build_query($params);
     
     // 버튼 HTML (링크 방식)

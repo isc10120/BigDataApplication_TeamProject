@@ -8,9 +8,10 @@ if (!$user_id) {
 }
 */
 
-$rest_id = $_GET['rest_id'] ?? 1; 
+$from_rest_id = $_GET['from_rest_id'] ?? null;
 $sort = $_GET['sort'] ?? 'popular';
 include_once "../functions/favorite.php";
+
 ?>
 
 <!DOCTYPE html>
@@ -33,7 +34,7 @@ include_once "../functions/favorite.php";
     <div class="container">
       <!-- 뒤로 가기 버튼 -->
       <div style="display:flex; flex-direction: row; justify-content: space-between;">
-          <button class="btn back-btn" onclick="history.back()">
+          <button class="btn back-btn" onclick="location.href='<?= $from_rest_id ? 'restaurant.php?rest_id='.$from_rest_id : 'tmpRestaurantClick.php' ?>';">
             <i class="bi bi-arrow-left"></i> Back
           </button>
           <h3 style="padding: 20px;"> my Favorite Restaurants </h3>
@@ -45,9 +46,18 @@ include_once "../functions/favorite.php";
       <!-- 본문 -->
       <div class="content">
         <div class="favorite_list">
-          <?php renderFavoriteList($user_id); ?>
+          <?php 
+          handleFavoriteToggle();
+          renderFavoriteList($user_id); ?>
         </div>
       </div>
     </div>
   </body>
+  <script>
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+</script>
 </html>
