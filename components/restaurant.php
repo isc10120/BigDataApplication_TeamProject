@@ -34,10 +34,11 @@ handleFavoriteToggle();
     <div class="container">
       <!-- 뒤로 가기 버튼 -->
         <div style="display:flex; flex-direction: row; justify-content: space-between;">
-          <button class="btn back-btn" onclick="history.back()">
+          <!-- TODO: 식당 선택 페이지로 수정 onclick="history.back()" => onclick="location.href='tmpRestaurantClick.php';" -->
+          <button class="btn back-btn" onclick="location.href='tmpRestaurantClick.php';">
             <i class="bi bi-arrow-left"></i> Back
           </button>
-          <button class="btn favoriteList-btn shadow" onclick="location.href='favorite.php';">
+          <button class="btn favoriteList-btn shadow" onclick="location.href='favorite.php?from_rest_id=<?= $rest_id ?>';">
             Favorites
           </button>
         </div>
@@ -90,4 +91,11 @@ handleFavoriteToggle();
       </div>
     </div>
   </body>
+  <script>
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      window.location.reload();
+    }
+  });
+</script>
 </html>
