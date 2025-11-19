@@ -1,3 +1,4 @@
+<!-- 217100 Kim Yumin -->
 <?php
 include_once "../sql/db.php";
 include_once "getRestaurantInfo.php";

@@ -1,8 +1,9 @@
+<!-- 217100 Kim Yumin -->
 <?php
 session_start();
-$rest_id = $_GET['rest_id'] ?? 1; // 기본값 1
+$rest_id = $_GET['rest_id'] ?? 1; 
 
-include '../sql/db.php'; // 데이터베이스 연결 파일
+include '../sql/db.php';
 $mysqli = connectDB();
 ?>
 
@@ -101,7 +102,6 @@ $mysqli = connectDB();
             margin-bottom: 20px;
         }
 
-        /* No reviews message */
         .no-reviews {
             text-align: center;
             padding: 20px;
@@ -117,7 +117,6 @@ $mysqli = connectDB();
         </div>
         <div class="review-card">
             <?php
-            // 모든 리뷰 가져오기
             $stmt = $mysqli->prepare("SELECT * FROM Review WHERE rest_id = ? ORDER BY created_at DESC");
             $stmt->bind_param("i", $rest_id);
             $stmt->execute();
