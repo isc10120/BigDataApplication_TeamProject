@@ -162,16 +162,22 @@ function toggleBox(id){
     <h5 class="mb-3">평점 정렬</h5>
     <div class="card-soft mb-3">
       <?php foreach ($restaurants as $i=>$r): ?>
-        <?php $color = ($i%2===0? 'row-blue':'row-green'); ?>
-        <div class="row-item <?= $color ?>">
-          <div>
-            <div class="fw-semibold"><?= htmlspecialchars($r['name']) ?></div>
-            <div class="subtext"><?= htmlspecialchars($r['country'].' / '.$r['city']) ?></div>
+        <?php
+          $color     = ($i%2===0? 'row-blue':'row-green');
+          $detailUrl = 'components/RestaurantDetail.php?rest_id=' . urlencode($r['rest_id']);
+        ?>
+        <!-- 전체 배너를 링크로 감싸기 -->
+        <a href="<?= $detailUrl ?>" class="text-decoration-none d-block">
+          <div class="row-item <?= $color ?>">
+            <div>
+              <div class="fw-semibold"><?= htmlspecialchars($r['name']) ?></div>
+              <div class="subtext"><?= htmlspecialchars($r['country'].' / '.$r['city']) ?></div>
+            </div>
+            <div class="score-text">
+              평균 평점 <?= is_null($r['avg']) ? '-' : number_format($r['avg'], 2) ?>
+            </div>
           </div>
-          <div class="score-text">
-            평균 평점 <?= is_null($r['avg']) ? '-' : number_format($r['avg'], 2) ?>
-          </div>
-        </div>
+        </a>
       <?php endforeach; ?>
     </div>
 
@@ -185,7 +191,6 @@ function toggleBox(id){
           $boxId = "cityBox".$i;
           $avgText = is_null($g['avg'])? '-' : number_format($g['avg'],2);
         ?>
-        <!-- 도시 패널 -->
         <div class="row-item <?= $color ?>" onclick="toggleBox('<?= $boxId ?>')">
           <div>
             <div class="fw-semibold"><?= htmlspecialchars($g['city']) ?></div>
@@ -194,7 +199,6 @@ function toggleBox(id){
           <div class="score-text">평균 <?= $avgText ?></div>
         </div>
 
-        <!-- 접히는 구간 -->
         <div class="child-box" id="<?= $boxId ?>">
         <?php foreach ($g['restaurants'] as $cr): ?>
             <div class="child-card">
@@ -219,7 +223,6 @@ function toggleBox(id){
           $boxId = "countryBox".$i;
           $avgText = is_null($g['avg'])? '-' : number_format($g['avg'],2);
         ?>
-        <!-- 국가 패널 -->
         <div class="row-item <?= $color ?>" onclick="toggleBox('<?= $boxId ?>')">
           <div>
             <div class="fw-semibold"><?= htmlspecialchars($g['country']) ?></div>
@@ -228,7 +231,6 @@ function toggleBox(id){
           <div class="score-text">평균 <?= $avgText ?></div>
         </div>
 
-        <!-- 접히는 구간 -->
         <div class="child-box" id="<?= $boxId ?>">
         <?php foreach ($g['restaurants'] as $cr): ?>
             <div class="child-card">
