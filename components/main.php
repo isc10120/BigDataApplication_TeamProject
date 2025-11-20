@@ -113,7 +113,7 @@ $values = array_map(fn($r) => (int)$r['orders'], $topRows);
   <div class="d-flex align-items-center gap-2 mb-4">
     <div class="brand">뀨asty</div>
     <!-- 로그아웃 버튼 -->
-    <a href="logout.php" class="btn btn-outline-dark fw-bold px-4">
+    <a href="logout.php" class="btn btn-outline-dark fw-bold px-4 ms-auto">
       로그아웃
     </a>
   </div>

@@ -39,7 +39,7 @@ include_once "../functions/favorite.php";
           <button class="btn favoriteList-btn shadow invisible" onclick="location.href='favorite.php';">
             Favorites
           </button>
-        </div>
+      </div>
       
       <!-- 본문 -->
       <div class="l-content-list">
