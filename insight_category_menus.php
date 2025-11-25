@@ -36,8 +36,7 @@ $monthly = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $sql_menu = "
     SELECT
         m.product_name,
-        SUM(o.quantity) AS total_qty,
-        RANK() OVER (ORDER BY SUM(o.quantity) DESC) AS rank_qty
+        SUM(o.quantity) AS total_qty
     FROM OrderHistory o
     JOIN Menu m ON o.menu_id = m.menu_id
     WHERE m.category_id = ?
