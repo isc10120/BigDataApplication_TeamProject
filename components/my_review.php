@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../sql/db.php';
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $mysqli = connectDB();
 
@@ -9,7 +10,7 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id   = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? '사용자';
 
 $rest_id = isset($_GET['rest_id']) ? (int)$_GET['rest_id'] : 0;
@@ -20,15 +21,12 @@ if ($rest_id <= 0) exit("유효한 식당 ID가 필요합니다.");
 
 $errors = [];
 $success = '';
-$comment = '';
-$score = 0;
 
-// 기존 리뷰 가져오기
-$stmt = $mysqli->prepare("SELECT review_id, score, comment FROM Review WHERE user_id = ? AND rest_id = ?");
+// 기존 리뷰 조회
+$stmt = $mysqli->prepare("SELECT review_id, score, comment FROM Review WHERE user_id=? AND rest_id=?");
 $stmt->bind_param("ii", $user_id, $rest_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$review = $result->fetch_assoc();
+$review = $stmt->get_result()->fetch_assoc();
 
 if (!$review) {
     header("Location: review_new.php?rest_id=$rest_id");
@@ -36,12 +34,13 @@ if (!$review) {
 }
 
 $review_id = $review['review_id'];
-$score = $review['score'];
-$comment = $review['comment'];
+$score     = $review['score'];
+$comment   = $review['comment'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
+    // 리뷰 수정
     if ($action === 'update') {
         $comment = trim($_POST['comment'] ?? '');
         $score   = (int)($_POST['score'] ?? 0);
@@ -50,22 +49,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($comment === '') $errors[] = "리뷰 내용을 입력해주세요.";
 
         if (empty($errors)) {
-            $stmt = $mysqli->prepare("UPDATE Review SET score=?, comment=? WHERE review_id=? AND user_id=?");
-            $stmt->bind_param("isii", $score, $comment, $review_id, $user_id);
+            try {
+                $mysqli->begin_transaction();
+
+                $stmt = $mysqli->prepare(
+                    "UPDATE Review SET score=?, comment=? WHERE review_id=? AND user_id=?"
+                );
+                $stmt->bind_param("isii", $score, $comment, $review_id, $user_id);
+                $stmt->execute();
+
+                $mysqli->commit();
+                header("Location: RestaurantDetail.php?rest_id=$rest_id");
+                exit;
+            } catch (Exception $e) {
+                $mysqli->rollback();
+                $errors[] = "리뷰 수정 중 오류가 발생했습니다.";
+            }
+        }
+    }
+
+    // 리뷰 삭제
+    elseif ($action === 'delete') {
+        try {
+            $mysqli->begin_transaction();
+
+            $stmt = $mysqli->prepare("DELETE FROM Review WHERE review_id=? AND user_id=?");
+            $stmt->bind_param("ii", $review_id, $user_id);
             $stmt->execute();
 
-            $success = "리뷰가 수정되었습니다.";
+            $mysqli->commit();
             header("Location: RestaurantDetail.php?rest_id=$rest_id");
             exit;
+        } catch (Exception $e) {
+            $mysqli->rollback();
+            $errors[] = "리뷰 삭제 중 오류가 발생했습니다.";
         }
-
-    } elseif ($action === 'delete') {
-        $stmt = $mysqli->prepare("DELETE FROM Review WHERE review_id=? AND user_id=?");
-        $stmt->bind_param("ii", $review_id, $user_id);
-        $stmt->execute();
-
-        header("Location: RestaurantDetail.php?rest_id=$rest_id");
-        exit;
     }
 }
 ?>
