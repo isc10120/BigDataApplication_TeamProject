@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once '../sql/db.php';
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // 예외 자동 발생
 
 $mysqli = connectDB();
 
@@ -10,23 +11,20 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id   = $_SESSION['user_id'];
 $user_name = $_SESSION['user_name'] ?? '사용자';
 
 $rest_id = isset($_GET['rest_id']) ? (int)$_GET['rest_id'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rest_id = (int)($_POST['rest_id'] ?? 0);
 }
-if ($rest_id <= 0) {
-    exit('유효한 식당 ID가 필요합니다.');
-}
+if ($rest_id <= 0) exit("유효한 식당 ID가 필요합니다.");
 
-// 이미 리뷰 있음? → my_review로 이동
-$stmt = $mysqli->prepare("SELECT review_id FROM Review WHERE user_id = ? AND rest_id = ?");
+// 이미 리뷰 있음 → 기존 리뷰 페이지로 이동
+$stmt = $mysqli->prepare("SELECT review_id FROM Review WHERE user_id=? AND rest_id=?");
 $stmt->bind_param("ii", $user_id, $rest_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$existing = $result->fetch_assoc();
+$existing = $stmt->get_result()->fetch_assoc();
 
 if ($existing && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: my_review.php?rest_id=$rest_id");
@@ -45,12 +43,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($comment === '') $errors[] = "리뷰 내용을 입력해주세요.";
 
     if (empty($errors)) {
-        $stmt = $mysqli->prepare("INSERT INTO Review (user_id, rest_id, score, comment) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiis", $user_id, $rest_id, $score, $comment);
-        $stmt->execute();
+        try {
+            $mysqli->begin_transaction();
 
-        header("Location: RestaurantDetail.php?rest_id=$rest_id");
-        exit;
+            $stmt = $mysqli->prepare(
+                "INSERT INTO Review (user_id, rest_id, score, comment) VALUES (?, ?, ?, ?)"
+            );
+            $stmt->bind_param("iiis", $user_id, $rest_id, $score, $comment);
+            $stmt->execute();
+
+            $mysqli->commit();
+            header("Location: RestaurantDetail.php?rest_id=$rest_id");
+            exit;
+        } catch (Exception $e) {
+            $mysqli->rollback();
+            $errors[] = "리뷰 저장 중 오류가 발생했습니다. 다시 시도해주세요.";
+        }
     }
 }
 ?>
